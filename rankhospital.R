@@ -1,4 +1,4 @@
-best <- function(state, outcome) {
+rankhospital <- function(state, outcome, num = "best") {
     data <- readDataAndCheckState(state)
     
     validOutcomes <- c("heart attack", "heart failure", "pneumonia")
@@ -17,7 +17,15 @@ best <- function(state, outcome) {
     stateHospitals <- data[data$State == state,]
     
     subdata <- data.frame(name=stateHospitals[[2]], outcome=as.numeric(stateHospitals[[dataCol]]))
-    bestOutcome <- min(subdata$outcome[!is.na(subdata$outcome)])
-    bestHospitals <- sort(as.character(subdata$name[subdata$outcome == bestOutcome]))
-    min(bestHospitals)
+    subdata <- subdata[!is.na(subdata$outcome),]
+    subdata <- subdata[order(subdata$outcome, subdata$name),]
+    subdata <- within(subdata, rank <- rank(order(outcome, name), ties.method = "first"))
+    
+    if (num == "best") {
+        num <- 0
+    } else if (num == "worst") {
+        num <- nrow(subdata)
+    }
+    
+    subdata[subdata$rank == num, 1]
 }
